@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { Route, Switch } from 'react-router-dom';
 import Products from './Components/Products';
-import Shopcart from './Components/Shopcart';
+import Shopcart from './Pages/Shopcart';
 import Details from './Components/Details';
 
 function App() {
