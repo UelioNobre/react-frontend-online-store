@@ -1,36 +1,30 @@
 import React, { Component } from 'react';
 
 export default class ItemCart extends Component {
-  constructor() {
-    super();
-
-    this.handlerClick = this.handlerClick.bind(this);
-  }
-
-  // Falta atualizar o click.
-  handlerClick() {
-    const { product } = this.props;
-    const { quantity } = product;
-    console.log(quantity);
-  }
-
   render() {
-    const { idx, product } = this.props;
-    const { title, thumbnail, price, quantity } = product;
+    const { product, onChangeQuantity, onDeleteItem } = this.props;
+    const { id, title, thumbnail, price, quantity } = product;
 
     return (
       <div>
-        <button type="button">X</button>
+        <button type="button" onClick={ () => onDeleteItem(id) }>Apagar</button>
         <img src={ thumbnail } alt={ title } />
         <h3>{ title }</h3>
 
         <div>
-          <button type="button"> - </button>
+          <button
+            type="button"
+            id={ `${id}` }
+            onClick={ () => onChangeQuantity(id, quantity, '-') }
+          >
+            -
+          </button>
           <span>{ quantity }</span>
           <button
             type="button"
-            id={ `add_${idx}` }
-            onClick={ this.handlerClick }
+            id={ `${id}` }
+            onClick={ () => onChangeQuantity(id, quantity, '+') }
+            data-testid="product-add-to-cart"
           >
             +
           </button>

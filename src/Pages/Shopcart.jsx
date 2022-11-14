@@ -3,6 +3,26 @@ import { Component } from 'react';
 import ItemCart from '../Components/ItemCart';
 import produtos from './arquivo';
 
+const getLocalStorage = () => {
+  const LOCAL_STORAGE_KEY = 'KEY_LOCAL_STORAGE';
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
+};
+
+const currencyBR = (value) => {
+  const formated = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+  return formated;
+};
+
+const calculateQuantity = (operation, qtd) => {
+  const updateQuantity = operation === '+' ? qtd + 1 : qtd - 1;
+  const quantity = updateQuantity < 0 ? 0 : updateQuantity;
+  return quantity;
+};
+
 export default class Shopcart extends Component {
   constructor() {
     super();
@@ -12,25 +32,45 @@ export default class Shopcart extends Component {
     };
 
     this.changeQuantity = this.changeQuantity.bind(this);
+    this.deleteItemCart = this.deleteItemCart.bind(this);
   }
 
-  changeQuantity(e) {
-    const { id } = e.target;
-    const idIndex = id.replace('add_', '');
-    const { products } = this.state;
-    const product = products[idIndex];
-    const total = product.quantity + 1;
+  componentDidMount() {
+    const products = produtos;
 
-    // Com esse click
-    this.setState((prevState) => {
-      prevState.products[idIndex].quantity = total;
+    // LOCALSTORAGE
+    // const products = getLocalStorage();
+    // console.log(productsLocalStorage);
+
+    this.setState({
+      products,
     });
+  }
+
+  deleteItemCart(productId) {
+    const { products } = this.state;
+    const produtosUpdated = products.filter(({ id }) => id !== productId);
+    this.setState({
+      products: produtosUpdated,
+    });
+  }
+
+  changeQuantity(productId, qtd, operation) {
+    const { products } = this.state;
+    const product = products.find(({ id }) => productId === id);
+    const quantity = calculateQuantity(operation, qtd);
+
+    product.quantity = quantity;
+
+    this.setState([...products, product]);
   }
 
   sumTotal() {
     const { products } = this.state;
     const accProduct = (acc, { quantity, price }) => acc + (quantity * price);
-    return products.reduce((acc, product) => accProduct(acc, product), 0);
+    const value = products.reduce((acc, product) => accProduct(acc, product), 0);
+
+    return currencyBR(value);
   }
 
   render() {
@@ -38,23 +78,23 @@ export default class Shopcart extends Component {
 
     return (
       <div>
-        <span data-testid="shopping-cart-empty-message">
-          Vazio
-        </span>
-
         <h1>Carrinho de compras</h1>
+
         {
-          products.map((product, idx) => (
-            <ItemCart
-              key={ idx }
-              product={ product }
-              onChangeQuantity={ this.changeQuantity }
-              idx={ idx }
-            />
-          ))
+          (products.length === 0
+            ? <p data-testid="shopping-cart-empty-message">Vazio</p>
+            : (products.map((product, idx) => (
+              <ItemCart
+                key={ idx }
+                product={ product }
+                onChangeQuantity={ this.changeQuantity }
+                onDeleteItem={ this.deleteItemCart }
+              />
+            )))
+          )
         }
         <hr />
-        <h2>{ `Total ${this.sumTotal()}` }</h2>
+        <h2>{ `${this.sumTotal()}` }</h2>
       </div>
     );
   }
