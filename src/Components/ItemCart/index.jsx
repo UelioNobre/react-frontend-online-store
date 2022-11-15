@@ -7,24 +7,31 @@ export default class ItemCart extends Component {
 
     return (
       <div>
-        <button type="button" onClick={ () => onDeleteItem(id) }>Apagar</button>
+        <button
+          type="button"
+          data-testid="remove-product"
+          onClick={ () => onDeleteItem(id) }
+        >
+          Apagar
+        </button>
         <img src={ thumbnail } alt={ title } />
-        <h3>{ title }</h3>
+        <h3 data-testid="shopping-cart-product-name">{ title }</h3>
 
         <div>
           <button
             type="button"
             id={ `${id}` }
-            onClick={ () => onChangeQuantity(id, quantity, '-') }
+            onClick={ () => onChangeQuantity(id, '-') }
+            data-testid="product-decrease-quantity"
           >
             -
           </button>
-          <span>{ quantity }</span>
+          <span data-testid="shopping-cart-product-quantity">{ quantity }</span>
           <button
             type="button"
             id={ `${id}` }
-            onClick={ () => onChangeQuantity(id, quantity, '+') }
-            data-testid="product-add-to-cart"
+            onClick={ () => onChangeQuantity(id, '+') }
+            data-testid="product-increase-quantity"
           >
             +
           </button>

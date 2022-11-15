@@ -1,11 +1,12 @@
 import { Component } from 'react';
 
 import ItemCart from '../Components/ItemCart';
-import produtos from './arquivo';
+import { getItem, setItem } from '../services/localStorage';
+
+const LOCAL_STORAGE_KEY = 'cartSaved';
 
 const getLocalStorage = () => {
-  const LOCAL_STORAGE_KEY = 'KEY_LOCAL_STORAGE';
-  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const data = getItem(LOCAL_STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 };
 
@@ -17,7 +18,7 @@ const currencyBR = (value) => {
   return formated;
 };
 
-const calculateQuantity = (operation, qtd) => {
+const calculateQuantity = (qtd, operation) => {
   const updateQuantity = operation === '+' ? qtd + 1 : qtd - 1;
   const quantity = updateQuantity < 0 ? 0 : updateQuantity;
   return quantity;
@@ -28,7 +29,7 @@ export default class Shopcart extends Component {
     super();
 
     this.state = {
-      products: produtos,
+      products: [],
     };
 
     this.changeQuantity = this.changeQuantity.bind(this);
@@ -36,11 +37,7 @@ export default class Shopcart extends Component {
   }
 
   componentDidMount() {
-    const products = produtos;
-
-    // LOCALSTORAGE
-    // const products = getLocalStorage();
-    // console.log(productsLocalStorage);
+    const products = getLocalStorage();
 
     this.setState({
       products,
@@ -48,21 +45,31 @@ export default class Shopcart extends Component {
   }
 
   deleteItemCart(productId) {
-    const { products } = this.state;
+    const products = getLocalStorage();
     const produtosUpdated = products.filter(({ id }) => id !== productId);
     this.setState({
       products: produtosUpdated,
     });
+    setItem(LOCAL_STORAGE_KEY, produtosUpdated);
   }
 
-  changeQuantity(productId, qtd, operation) {
-    const { products } = this.state;
-    const product = products.find(({ id }) => productId === id);
-    const quantity = calculateQuantity(operation, qtd);
+  changeQuantity(productId, operation) {
+    const productsLocalStorage = getLocalStorage();
+    const products = productsLocalStorage.map((product) => {
+      const quantity = calculateQuantity(product.quantity, operation);
 
-    product.quantity = quantity;
+      if (product.id === productId) {
+        product.quantity = quantity;
+      }
 
-    this.setState([...products, product]);
+      return product;
+    });
+
+    this.setState({
+      products,
+    });
+
+    setItem(LOCAL_STORAGE_KEY, products);
   }
 
   sumTotal() {
